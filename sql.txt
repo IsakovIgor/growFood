@@ -1,0 +1,24 @@
+Дано:
+1. таблица clients, поля id, name
+2. таблица orders, поля id, client_id, price
+
+1. Выбрать для каждого клиента количество заказов ценой меньше 1000 и больше 1000. (client_id, count1, count2)
+with cte as (
+    select count(client_id) as count_min,
+           client_id
+    from orders
+    where price < 1000 group by client_id),
+cte2 as (
+    select count(client_id) as count_max,
+           client_id
+    from orders
+    where price > 1000 group by client_id)
+select case when cte.client_id is not null then cte.client_id else cte2.client_id end,
+       cte.count_min, cte2.count_max
+from cte full join cte2 on cte.client_id = cte2.client_id
+
+2. Выбрать третий заказ для каждого клиента ( id, client_id, price)
+with cte as (select id, row_number() over (partition by client_id) as rn from orders)
+select id as order_id, rn from cte where rn = 3
+
+3. Выбрать для каждого клиента третий заказ сделанный после заказа стоимостью больше 1000 ( id, client_id, price)
